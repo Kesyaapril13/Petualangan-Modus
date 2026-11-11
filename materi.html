@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Pelajari pengertian dan cara mencari modus dalam statistika." />
+    <title>Materi Modus | Petualangan Modus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fredoka:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="js/app.js" defer></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="index.html" aria-label="Kembali ke beranda Petualangan Modus">
+          <span class="brand-mark" aria-hidden="true"><span>+</span><span>÷</span></span>
+          <span>Petualangan <strong>Modus</strong></span>
+        </a>
+        <a class="header-back" href="index.html"><span aria-hidden="true">←</span> Beranda</a>
+      </header>
+
+      <main class="lesson-main">
+        <div class="lesson-heading">
+          <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> PETA BELAJAR · STATISTIKA</p>
+          <h1 class="lesson-title">Kenalan dengan <span>Modus</span><span class="title-period">.</span></h1>
+          <p class="lesson-intro">Ikuti lima petunjuk ini untuk menemukan nilai yang paling sering muncul.</p>
+        </div>
+
+        <div class="lesson-tabs" role="tablist" aria-label="Materi tentang modus">
+          <button class="lesson-tab" id="tab-pengertian" type="button" role="tab" aria-selected="true" aria-controls="panel-pengertian" tabindex="0">
+            <span class="tab-number">01</span><span>Pengertian modus</span>
+          </button>
+          <button class="lesson-tab" id="tab-langkah" type="button" role="tab" aria-selected="false" aria-controls="panel-langkah" tabindex="-1">
+            <span class="tab-number">02</span><span>3 langkah mencari modus</span>
+          </button>
+          <button class="lesson-tab" id="tab-dua-modus" type="button" role="tab" aria-selected="false" aria-controls="panel-dua-modus" tabindex="-1">
+            <span class="tab-number">03</span><span>Data dengan dua modus</span>
+          </button>
+          <button class="lesson-tab" id="tab-tabel" type="button" role="tab" aria-selected="false" aria-controls="panel-tabel" tabindex="-1">
+            <span class="tab-number">04</span><span>Modus dari tabel frekuensi</span>
+          </button>
+          <button class="lesson-tab" id="tab-cerita" type="button" role="tab" aria-selected="false" aria-controls="panel-cerita" tabindex="-1">
+            <span class="tab-number">05</span><span>Soal cerita</span>
+          </button>
+        </div>
+
+        <section class="lesson-panel" id="panel-pengertian" role="tabpanel" aria-labelledby="tab-pengertian" tabindex="0">
+          <p class="panel-kicker">PETUNJUK 01 <span>·</span> KENALI KONSEPNYA</p>
+          <h2>Apa itu modus?</h2>
+          <p class="panel-lead">Modus adalah <strong>nilai atau data yang paling sering muncul</strong> dalam sekumpulan data.</p>
+          <div class="lesson-example">
+            <p class="example-label">Contoh data</p>
+            <div class="data-chips" aria-label="Data: 2, 4, 4, 5, 6">
+              <span>2</span><span class="is-mode">4</span><span class="is-mode">4</span><span>5</span><span>6</span>
+            </div>
+            <p class="example-explanation">Angka 4 muncul dua kali, lebih sering daripada angka lainnya. Jadi, <strong>modusnya adalah 4.</strong></p>
+          </div>
+          <p class="panel-note"><span aria-hidden="true">✦</span> Modus bisa berupa angka, nama, warna, atau kategori lainnya.</p>
+        </section>
+
+        <section class="lesson-panel" id="panel-langkah" role="tabpanel" aria-labelledby="tab-langkah" tabindex="0" hidden>
+          <p class="panel-kicker">PETUNJUK 02 <span>·</span> IKUTI URUTANNYA</p>
+          <h2>3 langkah mencari modus</h2>
+          <ol class="steps-list">
+            <li><span class="step-number">1</span><div><h3>Perhatikan semua data</h3><p>Tulis atau baca seluruh nilai dengan teliti. Contoh: 3, 5, 3, 2, 5, 3.</p></div></li>
+            <li><span class="step-number">2</span><div><h3>Hitung kemunculan tiap nilai</h3><p>Angka 2 muncul 1 kali, 3 muncul 3 kali, dan 5 muncul 2 kali.</p></div></li>
+            <li><span class="step-number">3</span><div><h3>Pilih yang paling sering</h3><p>Nilai dengan kemunculan terbanyak adalah modus. Pada contoh ini, modusnya <strong>3</strong>.</p></div></li>
+          </ol>
+        </section>
+
+        <section class="lesson-panel" id="panel-dua-modus" role="tabpanel" aria-labelledby="tab-dua-modus" tabindex="0" hidden>
+          <p class="panel-kicker">PETUNJUK 03 <span>·</span> ADA NILAI YANG SERI</p>
+          <h2>Satu kumpulan, dua modus</h2>
+          <p class="panel-lead">Kalau dua nilai sama-sama paling sering muncul, keduanya menjadi modus.</p>
+          <div class="lesson-example">
+            <p class="example-label">Contoh data</p>
+            <div class="data-chips" aria-label="Data: 1, 2, 2, 3, 4, 4, 5">
+              <span>1</span><span class="is-mode">2</span><span class="is-mode">2</span><span>3</span><span class="is-second-mode">4</span><span class="is-second-mode">4</span><span>5</span>
+            </div>
+            <div class="mode-pair"><span>2 muncul 2 kali</span><span>4 muncul 2 kali</span></div>
+          </div>
+          <p class="panel-note"><span aria-hidden="true">✦</span> Modus data tersebut adalah <strong>2 dan 4</strong>. Keduanya memiliki frekuensi tertinggi yang sama.</p>
+        </section>
+
+        <section class="lesson-panel" id="panel-tabel" role="tabpanel" aria-labelledby="tab-tabel" tabindex="0" hidden>
+          <p class="panel-kicker">PETUNJUK 04 <span>·</span> BACA TABELNYA</p>
+          <h2>Modus dari tabel frekuensi</h2>
+          <p class="panel-lead">Cari frekuensi terbesar, lalu lihat nilai yang berada pada baris yang sama.</p>
+          <div class="frequency-layout">
+            <table class="frequency-table">
+              <caption>Data hasil pengamatan</caption>
+              <thead><tr><th scope="col">Nilai</th><th scope="col">Frekuensi</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">1</th><td>2</td></tr>
+                <tr class="frequency-mode"><th scope="row">2</th><td>5 <span class="table-star" aria-label="frekuensi terbesar">★</span></td></tr>
+                <tr><th scope="row">3</th><td>3</td></tr>
+                <tr><th scope="row">4</th><td>1</td></tr>
+              </tbody>
+            </table>
+            <div class="frequency-result"><span class="result-label">FREKUENSI TERBESAR</span><strong>5</strong><p>Nilai pada baris frekuensi 5 adalah 2.</p><span class="result-answer">Jadi, modusnya 2</span></div>
+          </div>
+          <aside class="warning-note"><span class="warning-icon" aria-hidden="true">!</span><p><strong>Jangan tertukar nilai dan frekuensi.</strong> Frekuensi terbesar adalah 5, tetapi modusnya <strong>nilai 2</strong> yang mempunyai frekuensi 5.</p></aside>
+        </section>
+
+        <section class="lesson-panel" id="panel-cerita" role="tabpanel" aria-labelledby="tab-cerita" tabindex="0" hidden>
+          <p class="panel-kicker">PETUNJUK 05 <span>·</span> GUNAKAN DI SEKITARMU</p>
+          <h2>Modus dalam soal cerita</h2>
+          <div class="story-prompt"><span class="story-mark" aria-hidden="true">?</span><p>Di kelas, siswa memilih olahraga favorit. Ada 5 siswa memilih sepak bola, 4 siswa memilih bulu tangkis, dan 3 siswa memilih basket. Olahraga apa yang paling banyak dipilih?</p></div>
+          <div class="story-solution">
+            <p class="example-label">Temukan jawabannya</p>
+            <div class="story-bars" aria-label="Sepak bola 5 siswa, bulu tangkis 4 siswa, basket 3 siswa">
+              <div><span>Sepak bola</span><i><b style="--bar-width: 100%"></b></i><strong>5</strong></div>
+              <div><span>Bulu tangkis</span><i><b style="--bar-width: 80%"></b></i><strong>4</strong></div>
+              <div><span>Basket</span><i><b style="--bar-width: 60%"></b></i><strong>3</strong></div>
+            </div>
+            <p class="story-answer">Modusnya adalah <strong>sepak bola</strong>, karena dipilih oleh paling banyak siswa.</p>
+          </div>
+        </section>
+
+        <nav class="lesson-navigation" aria-label="Navigasi materi">
+          <a class="back-link" href="index.html"><span aria-hidden="true">←</span> Kembali ke beranda</a>
+          <span class="lesson-count">5 PETUNJUK MODUS <span aria-hidden="true">✦</span></span>
+        </nav>
+      </main>
+
+      <footer class="site-footer">
+        <span class="footer-mark" aria-hidden="true">∑</span>
+        <span>Statistika bisa jadi petualangan.</span>
+        <span class="footer-year">PETUALANGAN MODUS · 2026</span>
+      </footer>
+    </div>
+  </body>
+</html>

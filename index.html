@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Petualangan Modus, tempat seru untuk mengenal statistika sambil bermain."
+    />
+    <title>Petualangan Modus | Belajar Statistika</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fredoka:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="js/app.js" defer></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="#beranda" aria-label="Petualangan Modus, beranda">
+          <span class="brand-mark" aria-hidden="true"><span>+</span><span>÷</span></span>
+          <span>Petualangan <strong>Modus</strong></span>
+        </a>
+        <span class="header-note"><span class="sparkle" aria-hidden="true">✳</span> Belajar jadi petualangan</span>
+      </header>
+
+      <main id="beranda">
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="hero-copy">
+            <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> LAB STATISTIKA MINI</p>
+            <h1 id="hero-title">Petualangan<br /><span>Modus</span><span class="title-period">.</span></h1>
+            <p class="hero-description">
+              Siap jadi detektif angka? Yuk, belajar statistika sambil bermain dan temukan angka yang paling sering muncul!
+            </p>
+
+            <form class="player-form" id="player-form">
+              <label for="player-name">Nama petualang</label>
+              <div class="form-row">
+                <input
+                  id="player-name"
+                  name="playerName"
+                  type="text"
+                  placeholder="Tulis namamu di sini"
+                  autocomplete="given-name"
+                  maxlength="32"
+                  required
+                />
+                <button class="start-button" type="submit">
+                  <span>Mulai</span><span aria-hidden="true">→</span>
+                </button>
+              </div>
+              <p class="form-message" id="form-message" aria-live="polite">Namamu akan tersimpan untuk kunjungan berikutnya.</p>
+            </form>
+          </div>
+
+          <div class="hero-art" aria-label="Ilustrasi angka dan data statistika" role="img">
+            <span class="orbit-number orbit-number-one" aria-hidden="true">7</span>
+            <span class="orbit-number orbit-number-two" aria-hidden="true">2</span>
+            <span class="orbit-number orbit-number-three" aria-hidden="true">+</span>
+            <div class="data-board">
+              <div class="board-topline"><span>CATATAN DETEKTIF</span><span class="board-dots" aria-hidden="true">•••</span></div>
+              <p class="board-question">Angka mana yang paling sering muncul?</p>
+              <div class="number-row" aria-hidden="true">
+                <span>4</span><span>6</span><span>2</span><span>6</span><span>3</span><span>6</span>
+              </div>
+              <div class="chart-area" aria-hidden="true">
+                <div class="chart-column"><i style="--height: 38%"></i><span>2</span></div>
+                <div class="chart-column"><i style="--height: 62%"></i><span>3</span></div>
+                <div class="chart-column"><i style="--height: 38%"></i><span>4</span></div>
+                <div class="chart-column is-mode"><i style="--height: 100%"></i><span>6</span></div>
+              </div>
+              <div class="mode-answer"><span class="answer-star" aria-hidden="true">✦</span><span><strong>6</strong> paling sering muncul!</span></div>
+            </div>
+            <div class="magnifier" aria-hidden="true"><span></span></div>
+            <span class="art-caption" aria-hidden="true">Kumpulkan petunjuknya!</span>
+          </div>
+        </section>
+
+        <section class="menu-section" aria-labelledby="menu-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow section-eyebrow">PILIH PETUALANGANMU</p>
+              <h2 id="menu-title">Mulai dari mana?</h2>
+            </div>
+            <span class="section-aside">Tiga cara seru untuk mengenal modus <span aria-hidden="true">↘</span></span>
+          </div>
+
+          <div class="menu-grid">
+            <a class="menu-item menu-material" href="materi.html" aria-label="Buka Materi">
+              <div class="menu-icon" aria-hidden="true"><span class="book-page">A</span><span class="book-lines"></span></div>
+              <div class="menu-copy">
+                <span class="menu-number">01 / KENALI</span>
+                <h3>Materi</h3>
+                <p>Kenali modus dan cara menemukannya.</p>
+              </div>
+              <span class="menu-action">Pelajari <span aria-hidden="true">→</span></span>
+            </a>
+
+            <a class="menu-item menu-practice" href="latihan.html" aria-label="Buka Latihan Soal">
+              <div class="menu-icon" aria-hidden="true"><span class="pencil-shape"></span><span class="pencil-mark">✓</span></div>
+              <div class="menu-copy">
+                <span class="menu-number">02 / COBA</span>
+                <h3>Latihan Soal</h3>
+                <p>Asah ketelitianmu dengan soal-soal seru.</p>
+              </div>
+              <span class="menu-action">Mulai latihan <span aria-hidden="true">→</span></span>
+            </a>
+
+            <a class="menu-item menu-quiz" href="kuis.html" aria-label="Buka Game Kuis">
+              <div class="menu-icon" aria-hidden="true"><span class="quiz-question">?</span><span class="quiz-star">✦</span></div>
+              <div class="menu-copy">
+                <span class="menu-number">03 / TANTANG</span>
+                <h3>Game Kuis</h3>
+                <p>Uji kemampuanmu dalam misi kuis.</p>
+              </div>
+              <span class="menu-action">Mainkan <span aria-hidden="true">→</span></span>
+            </a>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <span class="footer-mark" aria-hidden="true">∑</span>
+        <span>Statistika bisa jadi petualangan.</span>
+        <span class="footer-year">PETUALANGAN MODUS · 2026</span>
+      </footer>
+    </div>
+  </body>
+</html>

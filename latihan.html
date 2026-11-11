@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Latihan soal modus dengan umpan balik dan pembahasan langkah demi langkah." />
+    <title>Latihan Soal | Petualangan Modus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fredoka:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="js/soal.js" defer></script>
+    <script src="js/app.js" defer></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="index.html" aria-label="Kembali ke beranda Petualangan Modus">
+          <span class="brand-mark" aria-hidden="true"><span>+</span><span>÷</span></span>
+          <span>Petualangan <strong>Modus</strong></span>
+        </a>
+        <a class="header-back" href="index.html"><span aria-hidden="true">←</span> Beranda</a>
+      </header>
+
+      <main class="exercise-main">
+        <div class="exercise-heading">
+          <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> MISI LATIHAN · STATISTIKA</p>
+          <h1 class="lesson-title">Latihan <span>Soal</span><span class="title-period">.</span></h1>
+          <p class="lesson-intro">Baca datanya, pilih jawabanmu, lalu pelajari langkah penyelesaiannya.</p>
+        </div>
+
+        <section class="exercise-card" id="exercise-app" aria-label="Latihan soal modus">
+          <div class="exercise-progress">
+            <div class="exercise-status">
+              <p id="question-number">Soal 1 dari 5</p>
+              <p id="score-display">Skor 0 / 5</p>
+            </div>
+            <div class="progress-track" role="progressbar" aria-label="Kemajuan latihan" aria-valuemin="0" aria-valuemax="5" aria-valuenow="1">
+              <span id="progress-fill"></span>
+            </div>
+          </div>
+
+          <div id="question-view" class="question-view">
+            <h2 id="question-prompt" class="question-prompt" tabindex="-1"></h2>
+            <div id="question-data" class="question-data"></div>
+            <p class="answer-hint">Pilih satu jawaban</p>
+            <div id="answer-choices" class="answer-choices"></div>
+            <div id="answer-feedback" class="answer-feedback" aria-live="polite" tabindex="-1" hidden></div>
+            <button id="next-question" class="exercise-button" type="button" hidden><span class="button-label">Soal berikutnya</span><span aria-hidden="true">→</span></button>
+          </div>
+
+          <div id="exercise-result" class="exercise-result" hidden>
+            <span class="result-star" aria-hidden="true">✦</span>
+            <p class="panel-kicker">MISI SELESAI</p>
+            <h2>Bagus, kamu sudah berusaha!</h2>
+            <p class="final-score-label">Skor akhirmu</p>
+            <p id="final-score" class="final-score">0 / 5</p>
+            <p id="result-summary" class="result-summary"></p>
+            <button id="retry-exercise" class="exercise-button" type="button"><span aria-hidden="true">↻</span> Coba lagi</button>
+          </div>
+        </section>
+
+        <nav class="exercise-navigation" aria-label="Navigasi latihan">
+          <a class="back-link" href="index.html"><span aria-hidden="true">←</span> Kembali ke beranda</a>
+          <span class="lesson-count">5 SOAL MODUS <span aria-hidden="true">✦</span></span>
+        </nav>
+      </main>
+
+      <footer class="site-footer">
+        <span class="footer-mark" aria-hidden="true">∑</span>
+        <span>Statistika bisa jadi petualangan.</span>
+        <span class="footer-year">PETUALANGAN MODUS · 2026</span>
+      </footer>
+    </div>
+  </body>
+</html>

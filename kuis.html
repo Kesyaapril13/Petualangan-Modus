@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Mainkan kuis modus, kumpulkan poin, dan pecahkan rekor terbaikmu." />
+    <title>Game Kuis | Petualangan Modus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fredoka:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="js/soal.js" defer></script>
+    <script src="js/kuis.js" defer></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="index.html" aria-label="Kembali ke beranda Petualangan Modus">
+          <span class="brand-mark" aria-hidden="true"><span>+</span><span>÷</span></span>
+          <span>Petualangan <strong>Modus</strong></span>
+        </a>
+        <a class="header-back" href="index.html"><span aria-hidden="true">←</span> Beranda</a>
+      </header>
+
+      <main class="quiz-main">
+        <div class="quiz-heading">
+          <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> TANTANGAN CEPAT · STATISTIKA</p>
+          <h1 class="lesson-title">Game <span>Kuis</span><span class="title-period">.</span></h1>
+          <p class="lesson-intro">Jawab dengan cermat, jaga nyawamu, dan kejar skor terbaik!</p>
+        </div>
+
+        <section class="quiz-card" id="quiz-app" aria-label="Game kuis modus">
+          <div class="quiz-topline">
+            <div class="quiz-stats">
+              <div class="quiz-stat"><span>SKOR</span><strong id="quiz-score">0</strong></div>
+              <div class="quiz-stat"><span>BERUNTUN</span><strong id="quiz-streak">0</strong></div>
+              <div class="quiz-stat"><span>REKOR</span><strong id="quiz-best">0</strong></div>
+            </div>
+            <div class="quiz-lives" id="quiz-lives" aria-label="3 nyawa tersisa">
+              <span aria-hidden="true">♥</span><span aria-hidden="true">♥</span><span aria-hidden="true">♥</span>
+              <span class="visually-hidden" id="quiz-lives-label" aria-live="polite">3 nyawa tersisa</span>
+            </div>
+          </div>
+
+          <div class="quiz-progress-line">
+            <p id="quiz-round">Soal 1 dari 5</p>
+            <div class="progress-track" role="progressbar" aria-label="Kemajuan kuis" aria-valuemin="0" aria-valuemax="5" aria-valuenow="1">
+              <span id="quiz-progress-fill"></span>
+            </div>
+          </div>
+
+          <div id="quiz-question-view" class="quiz-question-view">
+            <h2 id="quiz-prompt" class="quiz-prompt" tabindex="-1"></h2>
+            <div id="quiz-data" class="quiz-data"></div>
+            <p class="answer-hint">Pilih jawaban yang paling tepat</p>
+            <div id="quiz-choices" class="answer-choices"></div>
+            <div id="quiz-feedback" class="quiz-feedback" aria-live="polite" tabindex="-1" hidden></div>
+            <button id="quiz-next" class="exercise-button" type="button" hidden>
+              <span id="quiz-next-label">Lanjut</span><span aria-hidden="true">→</span>
+            </button>
+          </div>
+
+          <div id="quiz-result" class="quiz-result" hidden>
+            <p class="panel-kicker">MISI SELESAI</p>
+            <h2 id="quiz-result-title">Hasil kuis</h2>
+            <div id="quiz-stars" class="quiz-stars" aria-label="0 dari 3 bintang"><span>★</span><span>★</span><span>★</span></div>
+            <p class="quiz-final-label">Skor akhir</p>
+            <p class="quiz-final-score" id="quiz-final-score">0</p>
+            <p class="quiz-result-summary" id="quiz-result-summary"></p>
+            <section class="wrong-review" aria-labelledby="wrong-review-title">
+              <h3 id="wrong-review-title">Soal untuk ditinjau</h3>
+              <ul id="quiz-wrong-list" class="quiz-wrong-list"></ul>
+            </section>
+            <button id="quiz-restart" class="exercise-button" type="button"><span aria-hidden="true">↻</span> Main lagi</button>
+          </div>
+        </section>
+
+        <nav class="exercise-navigation" aria-label="Navigasi kuis">
+          <a class="back-link" href="index.html"><span aria-hidden="true">←</span> Kembali ke beranda</a>
+          <span class="lesson-count">5 SOAL DIACAK <span aria-hidden="true">✦</span></span>
+        </nav>
+      </main>
+
+      <footer class="site-footer">
+        <span class="footer-mark" aria-hidden="true">∑</span>
+        <span>Statistika bisa jadi petualangan.</span>
+        <span class="footer-year">PETUALANGAN MODUS · 2026</span>
+      </footer>
+    </div>
+  </body>
+</html>
