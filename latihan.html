@@ -29,22 +29,23 @@
         <div class="exercise-heading">
           <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> MISI LATIHAN · STATISTIKA</p>
           <h1 class="lesson-title">Latihan <span>Soal</span><span class="title-period">.</span></h1>
-          <p class="lesson-intro">Baca datanya, pilih jawabanmu, lalu pelajari langkah penyelesaiannya.</p>
+          <p class="lesson-intro">Selesaikan setiap tahap pilihan ganda dan kumpulkan poin dari tiap jawaban benar.</p>
         </div>
 
         <section class="exercise-card" id="exercise-app" aria-label="Latihan soal modus">
           <div class="exercise-progress">
             <div class="exercise-status">
               <p id="question-number">Soal 1 dari 5</p>
-              <p id="score-display">Skor 0 / 5</p>
+              <p id="score-display" aria-live="polite">Skor 0 / 30</p>
             </div>
-            <div class="progress-track" role="progressbar" aria-label="Kemajuan latihan" aria-valuemin="0" aria-valuemax="5" aria-valuenow="1">
+            <div class="progress-track" role="progressbar" aria-label="Kemajuan latihan" aria-valuemin="0" aria-valuemax="30" aria-valuenow="1">
               <span id="progress-fill"></span>
             </div>
           </div>
 
           <div id="question-view" class="question-view">
             <h2 id="question-prompt" class="question-prompt" tabindex="-1"></h2>
+            <p id="stage-prompt" class="stage-prompt"></p>
             <div id="question-data" class="question-data"></div>
             <p class="answer-hint">Pilih satu jawaban</p>
             <div id="answer-choices" class="answer-choices"></div>
@@ -57,15 +58,17 @@
             <p class="panel-kicker">MISI SELESAI</p>
             <h2>Bagus, kamu sudah berusaha!</h2>
             <p class="final-score-label">Skor akhirmu</p>
-            <p id="final-score" class="final-score">0 / 5</p>
+            <p id="final-score" class="final-score">0 / 30</p>
+            <p id="final-grade" class="final-grade"></p>
             <p id="result-summary" class="result-summary"></p>
+            <ol id="score-breakdown" class="score-breakdown"></ol>
             <button id="retry-exercise" class="exercise-button" type="button"><span aria-hidden="true">↻</span> Coba lagi</button>
           </div>
         </section>
 
         <nav class="exercise-navigation" aria-label="Navigasi latihan">
           <a class="back-link" href="index.html"><span aria-hidden="true">←</span> Kembali ke beranda</a>
-          <span class="lesson-count">5 SOAL MODUS <span aria-hidden="true">✦</span></span>
+          <span class="lesson-count">5 SOAL · 30 POIN <span aria-hidden="true">✦</span></span>
         </nav>
       </main>
 

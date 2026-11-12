@@ -66,6 +66,7 @@ function initializeExercise(root, questions) {
   const progressFill = root.querySelector('#progress-fill');
   const questionView = root.querySelector('#question-view');
   const questionPrompt = root.querySelector('#question-prompt');
+  const stagePrompt = root.querySelector('#stage-prompt');
   const questionData = root.querySelector('#question-data');
   const answerChoices = root.querySelector('#answer-choices');
   const answerFeedback = root.querySelector('#answer-feedback');
@@ -73,29 +74,43 @@ function initializeExercise(root, questions) {
   const nextQuestionLabel = nextQuestionButton.querySelector('.button-label');
   const resultView = root.querySelector('#exercise-result');
   const finalScore = root.querySelector('#final-score');
+  const finalGrade = root.querySelector('#final-grade');
   const resultSummary = root.querySelector('#result-summary');
+  const scoreBreakdown = root.querySelector('#score-breakdown');
   const retryButton = root.querySelector('#retry-exercise');
+  const totalStages = questions.reduce((total, question) => total + question.stages.length, 0);
+  const maximumScore = questions.reduce(
+    (total, question) => total + question.stages.reduce((questionTotal, stage) => questionTotal + stage.points, 0),
+    0
+  );
   let currentIndex = 0;
+  let currentStageIndex = 0;
   let score = 0;
+  let questionScores = questions.map(() => 0);
 
   function renderQuestion(moveFocus = false) {
     const question = questions[currentIndex];
+    const stage = question.stages[currentStageIndex];
+    const stageNumber = questions
+      .slice(0, currentIndex)
+      .reduce((total, previousQuestion) => total + previousQuestion.stages.length, currentStageIndex + 1);
     questionView.hidden = false;
     resultView.hidden = true;
     answerFeedback.hidden = true;
     answerFeedback.className = 'answer-feedback';
     nextQuestionButton.hidden = true;
-    questionNumber.textContent = `Soal ${currentIndex + 1} dari ${questions.length}`;
-    scoreDisplay.textContent = `Skor ${score} / ${questions.length}`;
-    progressTrack.setAttribute('aria-valuemax', String(questions.length));
-    progressTrack.setAttribute('aria-valuenow', String(currentIndex + 1));
-    progressFill.style.width = `${((currentIndex + 1) / questions.length) * 100}%`;
+    questionNumber.textContent = `Soal ${currentIndex + 1} dari ${questions.length} · Tahap ${currentStageIndex + 1} dari ${question.stages.length}`;
+    scoreDisplay.textContent = `Skor ${score} / ${maximumScore}`;
+    progressTrack.setAttribute('aria-valuemax', String(totalStages));
+    progressTrack.setAttribute('aria-valuenow', String(stageNumber));
+    progressFill.style.width = `${(stageNumber / totalStages) * 100}%`;
     questionPrompt.textContent = question.prompt;
+    stagePrompt.textContent = stage.prompt;
     questionData.replaceChildren();
     answerChoices.replaceChildren();
     renderQuestionData(question);
 
-    question.choices.forEach((choice, index) => {
+    stage.choices.forEach((choice, index) => {
       const button = document.createElement('button');
       const letter = document.createElement('span');
       const answer = document.createElement('span');
@@ -105,7 +120,7 @@ function initializeExercise(root, questions) {
       letter.textContent = String.fromCharCode(65 + index);
       answer.textContent = choice;
       button.append(letter, answer);
-      button.addEventListener('click', () => selectAnswer(button, choice, question));
+      button.addEventListener('click', () => selectAnswer(button, choice, stage));
       answerChoices.append(button);
     });
 
@@ -159,38 +174,44 @@ function initializeExercise(root, questions) {
     questionData.append(table);
   }
 
-  function selectAnswer(selectedButton, selectedAnswer, question) {
-    const isCorrect = selectedAnswer === question.answer;
-    if (isCorrect) score += 1;
+  function selectAnswer(selectedButton, selectedAnswer, stage) {
+    const isCorrect = selectedAnswer === stage.answer;
+    const pointsEarned = isCorrect ? stage.points : 0;
+    score += pointsEarned;
+    questionScores[currentIndex] += pointsEarned;
 
     answerChoices.querySelectorAll('.answer-option').forEach((button) => {
       button.disabled = true;
       const answerText = button.lastElementChild.textContent;
-      if (answerText === question.answer) button.classList.add('is-correct');
+      if (answerText === stage.answer) button.classList.add('is-correct');
     });
 
     if (!isCorrect) selectedButton.classList.add('is-incorrect');
-    scoreDisplay.textContent = `Skor ${score} / ${questions.length}`;
+    scoreDisplay.textContent = `Skor ${score} / ${maximumScore}`;
     answerFeedback.classList.toggle('is-incorrect', !isCorrect);
     answerFeedback.replaceChildren();
 
     const heading = document.createElement('h3');
     heading.className = 'feedback-heading';
-    heading.textContent = isCorrect ? 'Benar! Jawabanmu tepat.' : `Belum tepat. Jawaban yang benar: ${question.answer}.`;
+    heading.textContent = isCorrect
+      ? `Benar! Kamu mendapat ${pointsEarned} poin.`
+      : `Belum tepat. Jawaban yang benar: ${stage.answer}.`;
     const steps = document.createElement('ol');
     steps.className = 'explanation-list';
-    question.explanation.forEach((explanation, index) => {
-      const step = document.createElement('li');
-      const label = document.createElement('span');
-      const text = document.createElement('p');
-      label.textContent = `Langkah ${index + 1}`;
-      text.textContent = explanation;
-      step.append(label, text);
-      steps.append(step);
-    });
+    const step = document.createElement('li');
+    const label = document.createElement('span');
+    const text = document.createElement('p');
+    label.textContent = `Poin: ${pointsEarned} / ${stage.points}`;
+    text.textContent = stage.explanation;
+    step.append(label, text);
+    steps.append(step);
     answerFeedback.append(heading, steps);
     answerFeedback.hidden = false;
-    nextQuestionLabel.textContent = currentIndex === questions.length - 1 ? 'Lihat hasil' : 'Soal berikutnya';
+    const isLastStage = currentStageIndex === questions[currentIndex].stages.length - 1;
+    const isLastQuestion = currentIndex === questions.length - 1;
+    nextQuestionLabel.textContent = isLastStage
+      ? (isLastQuestion ? 'Lihat hasil' : 'Soal berikutnya')
+      : 'Tahap berikutnya';
     nextQuestionButton.hidden = false;
     answerFeedback.focus();
   }
@@ -199,31 +220,52 @@ function initializeExercise(root, questions) {
     questionView.hidden = true;
     resultView.hidden = false;
     questionNumber.textContent = 'Latihan selesai';
-    progressTrack.setAttribute('aria-valuenow', String(questions.length));
+    progressTrack.setAttribute('aria-valuenow', String(totalStages));
     progressFill.style.width = '100%';
-    scoreDisplay.textContent = `Skor ${score} / ${questions.length}`;
-    finalScore.textContent = `${score} / ${questions.length}`;
-    resultSummary.textContent = score === questions.length
-      ? 'Hebat! Semua jawabanmu benar. Kamu sudah jeli menemukan modus.'
-      : score >= 3
+    scoreDisplay.textContent = `Skor ${score} / ${maximumScore}`;
+    finalScore.textContent = `${score} / ${maximumScore}`;
+    finalGrade.textContent = `Nilai: ${((score / maximumScore) * 100).toFixed(2)} / 100`;
+    resultSummary.textContent = score === maximumScore
+      ? 'Hebat! Kamu berhasil menyelesaikan semua tahap.'
+      : score >= maximumScore / 2
         ? 'Kerja bagus! Terus berlatih agar makin jeli menemukan modus.'
-        : 'Terus berlatih, ya. Coba tinjau lagi pembahasan di setiap soal.';
+        : 'Terus berlatih, ya. Tinjau kembali langkah-langkah menentukan modus.';
+    scoreBreakdown.replaceChildren();
+    questions.forEach((question, index) => {
+      const item = document.createElement('li');
+      const questionLabel = document.createElement('span');
+      const questionScore = document.createElement('strong');
+      const questionMaximum = question.stages.reduce((total, stage) => total + stage.points, 0);
+      questionLabel.textContent = `Soal ${index + 1}`;
+      questionScore.textContent = `${questionScores[index]} / ${questionMaximum}`;
+      item.append(questionLabel, questionScore);
+      scoreBreakdown.append(item);
+    });
     retryButton.focus();
   }
 
   nextQuestionButton.addEventListener('click', () => {
+    if (currentStageIndex < questions[currentIndex].stages.length - 1) {
+      currentStageIndex += 1;
+      renderQuestion(true);
+      return;
+    }
+
     if (currentIndex === questions.length - 1) {
       showResult();
       return;
     }
 
     currentIndex += 1;
+    currentStageIndex = 0;
     renderQuestion(true);
   });
 
   retryButton.addEventListener('click', () => {
     currentIndex = 0;
+    currentStageIndex = 0;
     score = 0;
+    questionScores = questions.map(() => 0);
     renderQuestion(true);
   });
 
