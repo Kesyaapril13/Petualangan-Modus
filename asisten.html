@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Kak Modi, asisten belajar AI yang membimbing siswa menemukan modus langkah demi langkah." />
+    <meta name="description" content="Asisten Belajar AI yang membimbing langkah demi langkah menemukan modus." />
     <title>Asisten Belajar AI | Petualangan Modus</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="css/asisten.css" />
     <script src="js/soal.js" defer></script>
     <script src="js/asisten.js" defer></script>
+    <script src="js/kuesioner.js" defer></script>
   </head>
   <body>
     <div class="page-shell">
@@ -26,97 +27,41 @@
         <a class="header-back" href="index.html"><span aria-hidden="true">←</span> Beranda</a>
       </header>
 
-      <main class="assistant-main">
+      <main class="exercise-main">
         <div class="exercise-heading">
-          <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> ASISTEN BELAJAR AI · RMT</p>
-          <h1 class="lesson-title">Kak <span>Modi</span><span class="title-period">.</span></h1>
-          <p class="lesson-intro">Pilih soal, lalu temukan modusnya bersama Kak Modi selangkah demi selangkah. Kak Modi tidak memberi jawaban, tapi membantumu berpikir.</p>
+          <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> ASISTEN BELAJAR · AI</p>
+          <h1 class="lesson-title">Tanya <span>Kak Modi</span><span class="title-period">.</span></h1>
+          <p class="lesson-intro">Kak Modi tidak memberi jawaban langsung. Ia membimbingmu berpikir selangkah demi selangkah.</p>
         </div>
 
-        <section class="picker-card" aria-labelledby="picker-title">
-          <h2 id="picker-title" class="picker-title">Pilih soal</h2>
-          <div class="soal-picker" id="soal-picker" role="group" aria-label="Daftar soal"></div>
+        <section class="ai-card" aria-label="Asisten belajar modus">
+          <div class="ai-soal-pick" role="tablist" id="soal-tabs" aria-label="Pilih soal"></div>
+
+          <div class="ai-soal" id="soal-box"></div>
+
+          <ol class="rmt-track" id="rmt-track" aria-label="Fase Rigorous Mathematical Thinking">
+            <li data-step="1"><b>1</b><span>Input</span><small>Kumpulkan informasi</small></li>
+            <li data-step="2"><b>2</b><span>Elaborasi</span><small>Olah &amp; bandingkan</small></li>
+            <li data-step="3"><b>3</b><span>Output</span><small>Jawab &amp; refleksi</small></li>
+          </ol>
+
+          <div class="chat-log" id="chat-log" aria-live="polite"></div>
+
+          <div class="quick-row">
+            <button type="button" class="quick-btn" data-quick="bingung">😵 Aku bingung</button>
+            <button type="button" class="quick-btn" data-quick="hint">💡 Beri petunjuk</button>
+            <button type="button" class="quick-btn" data-quick="cek">✅ Cek jawabanku</button>
+          </div>
+
+          <form class="chat-form" id="chat-form">
+            <input id="chat-input" type="text" autocomplete="off" placeholder="Tulis jawaban atau pertanyaanmu…" aria-label="Pesan untuk Kak Modi" maxlength="500" />
+            <button type="submit" id="send-btn" aria-label="Kirim">➤</button>
+          </form>
+          <p class="ai-note"><span id="mode-badge" class="mode-badge">Kak Modi memakai AI DeepSeek</span> · Periksa kembali setiap langkahmu, ya.</p>
+          <button type="button" id="open-kuesioner" class="kq-open">📝 Isi kuesioner beban belajar</button>
         </section>
 
-        <div class="assistant-layout">
-          <section class="assistant-panel" aria-label="Soal dan fase belajar">
-            <div class="phase-box">
-              <p class="panel-label">FASE RMT SEKARANG</p>
-              <ol class="phase-track" id="phase-track">
-                <li data-phase="input"><span class="phase-index">1</span><span class="phase-name">Input</span></li>
-                <li data-phase="elaborasi"><span class="phase-index">2</span><span class="phase-name">Elaborasi</span></li>
-                <li data-phase="output"><span class="phase-index">3</span><span class="phase-name">Output</span></li>
-              </ol>
-              <p class="phase-detail" id="phase-detail" aria-live="polite">Pilih soal untuk memulai.</p>
-            </div>
-
-            <div class="task-card" id="task-card">
-              <div class="task-top">
-                <span class="task-label" id="task-label">Belum ada soal</span>
-                <span class="hint-meter" id="hint-meter" aria-label="Petunjuk dipakai 0 dari 3">
-                  <span>Petunjuk</span><i></i><i></i><i></i>
-                </span>
-              </div>
-              <p class="task-prompt" id="task-prompt">Pilih Soal 1 sampai 5 di atas.</p>
-            </div>
-
-            <div class="data-box" id="data-box" hidden>
-              <p class="panel-label">DATA SOAL</p>
-              <p class="soal-prompt" id="soal-prompt"></p>
-              <div id="soal-data"></div>
-              <div class="tally-box" id="tally-box" hidden>
-                <div class="tally-top">
-                  <p class="panel-label">KERTAS TURUS</p>
-                  <button class="tally-reset" id="tally-reset" type="button">Hapus turus</button>
-                </div>
-                <p class="tally-help">Ketuk setiap kartu angka untuk memberi turus. Ubah turus menjadi angka frekuensi sendiri, lalu hitung ulang.</p>
-                <table class="tally-table">
-                  <thead><tr><th scope="col">Nilai</th><th scope="col">Turus</th></tr></thead>
-                  <tbody id="tally-body"></tbody>
-                </table>
-                <p class="tally-progress" id="tally-progress" aria-live="polite"></p>
-              </div>
-            </div>
-          </section>
-
-          <section class="chat-card" aria-label="Percakapan dengan Kak Modi">
-            <header class="chat-header">
-              <span class="modi-avatar" aria-hidden="true">M</span>
-              <div>
-                <h2>Kak Modi</h2>
-                <p>Teman belajar modus</p>
-              </div>
-              <span class="mode-badge" id="mode-badge" title="Status koneksi AI">Mode AI</span>
-            </header>
-
-            <div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-label="Riwayat percakapan">
-              <p class="chat-empty">Halo! Pilih soal dulu, nanti Kak Modi menemanimu berpikir.</p>
-            </div>
-
-            <div class="choice-box" id="choice-box" hidden>
-              <p class="panel-label">PILIH SALAH SATU JAWABAN</p>
-              <div class="choice-list" id="choice-list"></div>
-            </div>
-
-            <div class="quick-actions" role="group" aria-label="Bantuan cepat">
-              <button class="quick-button" id="btn-bingung" type="button" disabled><span aria-hidden="true">?</span> Aku bingung</button>
-              <button class="quick-button" id="btn-hint" type="button" disabled><span aria-hidden="true">✦</span> Beri petunjuk</button>
-              <button class="quick-button is-primary" id="btn-check" type="button" disabled><span aria-hidden="true">✓</span> Cek jawabanku</button>
-            </div>
-
-            <form class="chat-form" id="chat-form">
-              <label class="sr-only" for="chat-input">Tulis jawaban atau pertanyaan untuk Kak Modi</label>
-              <textarea id="chat-input" rows="2" maxlength="300" placeholder="Pilih soal dulu…" disabled></textarea>
-              <button class="send-button" id="btn-send" type="submit" disabled>Kirim <span aria-hidden="true">→</span></button>
-            </form>
-            <p class="form-note" id="form-note" aria-live="polite">Tulis jawabanmu lalu tekan <strong>Cek jawabanku</strong> atau Enter. Untuk bertanya, tekan <strong>Kirim</strong>.</p>
-          </section>
-        </div>
-
-        <nav class="exercise-navigation assistant-navigation" aria-label="Navigasi asisten">
-          <a class="back-link" href="index.html"><span aria-hidden="true">←</span> Kembali ke beranda</a>
-          <span class="lesson-count">INPUT · ELABORASI · OUTPUT <span aria-hidden="true">✦</span></span>
-        </nav>
+        <section id="kuesioner" class="ai-card kq" hidden aria-label="Kuesioner beban belajar"></section>
       </main>
 
       <footer class="site-footer">
