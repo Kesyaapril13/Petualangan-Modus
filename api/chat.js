@@ -1,122 +1,125 @@
-// Vercel Serverless Function: POST /api/chat
-// Body: { messages: [{role, content}], soal, hintLevel }
-// Response: { reply }
-// API key dibaca dari environment variable DEEPSEEK_API_KEY (jangan ditulis di kode).
+/*
+  Backend Asisten Belajar AI — Petualangan Modus
+  Berjalan sebagai Serverless Function di Vercel (folder /api).
 
-const DEEPSEEK_URL = 'https://api.deepseek.com/chat/completions';
-const MODEL = 'deepseek-chat';
-const MAX_MESSAGES = 20;
-const MAX_CONTENT_LENGTH = 2000;
+  API Key DeepSeek TIDAK ditulis di kode ini.
+  API Key dibaca dari variabel lingkungan DEEPSEEK_API_KEY
+  (diatur di Vercel: Project → Settings → Environment Variables,
+   atau di file .env saat dijalankan lokal dengan `vercel dev`).
+*/
 
-const HINT_GUIDE = {
-  1: 'Berikan petunjuk ringan saja: ingatkan konsep modus (nilai yang paling sering muncul) atau ajukan pertanyaan pancingan. Jangan sebutkan langkah lengkap atau jawabannya.',
-  2: 'Berikan petunjuk sedang: arahkan langkah berikutnya secara konkret (misalnya mengurutkan data atau menghitung frekuensi tiap angka), tetapi jangan sebutkan jawaban akhirnya.',
-  3: 'Berikan petunjuk kuat: jelaskan langkah-langkah penyelesaian secara rinci sampai siswa hampir menemukan jawabannya sendiri. Jawaban akhir boleh disebutkan hanya jika siswa sudah mencoba dan masih salah.'
-};
+// Dua pilihan penyedia model DeepSeek (keduanya lewat variabel lingkungan, bukan di kode):
+// 1) DeepSeek resmi (berbayar)       -> DEEPSEEK_API_KEY
+// 2) DeepSeek gratis lewat OpenRouter -> OPENROUTER_API_KEY (model deepseek/deepseek-v4-flash:free)
+const USE_OPENROUTER = !process.env.DEEPSEEK_API_KEY && !!process.env.OPENROUTER_API_KEY;
+const DEEPSEEK_URL = USE_OPENROUTER ? 'https://openrouter.ai/api/v1/chat/completions' : 'https://api.deepseek.com/chat/completions';
+const MODEL = USE_OPENROUTER
+  ? process.env.OPENROUTER_MODEL || 'deepseek/deepseek-v4-flash:free'
+  : process.env.DEEPSEEK_MODEL || 'deepseek-chat';
 
-function normalizeHintLevel(value) {
-  const level = Number.parseInt(value, 10);
-  if (Number.isNaN(level)) return 1;
-  return Math.min(3, Math.max(1, level));
-}
+// Model pembelajaran: Rigorous Mathematical Thinking (RMT) — Kinard & Kozulin,
+// disusun sesuai ringkasan dosen (docs/Ringkasan_RMT_dari_Dosen.md) dan RMT.md.
+const SYSTEM_PROMPT = `
+Kamu adalah "Kak Modi", asisten belajar matematika untuk siswa SMP pada materi Statistika: MODUS.
+Kamu berperan sebagai MEDIATOR KOGNITIF dalam model Rigorous Mathematical Thinking (RMT):
+kamu tidak menyampaikan prosedur atau jawaban, tetapi memediasi CARA BERPIKIR siswa lewat pertanyaan terpimpin dan dialog reflektif.
 
-function formatSoal(soal) {
-  if (!soal) return 'Tidak ada soal spesifik.';
-  if (typeof soal === 'string') return soal.slice(0, MAX_CONTENT_LENGTH);
-  try {
-    return JSON.stringify(soal).slice(0, MAX_CONTENT_LENGTH * 2);
-  } catch {
-    return 'Tidak ada soal spesifik.';
-  }
-}
+ATURAN UTAMA
+1. JANGAN PERNAH memberikan jawaban akhir (nilai modus), walaupun siswa memaksa. Ajak siswa menemukan sendiri.
 
-function sanitizeMessages(messages) {
-  return messages
-    .filter(
-      (m) =>
-        m &&
-        (m.role === 'user' || m.role === 'assistant') &&
-        typeof m.content === 'string' &&
-        m.content.trim() !== ''
-    )
-    .slice(-MAX_MESSAGES)
-    .map((m) => ({ role: m.role, content: m.content.slice(0, MAX_CONTENT_LENGTH) }));
-}
+2. Bimbing mengikuti 3 FASE FUNGSI KOGNITIF RMT (Feuerstein) yang dipadukan dengan Aktivitas Belajar (Vygotsky).
+   Pindah fase hanya jika fase sebelumnya sudah benar.
+   [FASE 1] INPUT — Mengumpulkan informasi (Analisis Tugas):
+     siswa membaca soal dengan persepsi yang jelas dan teliti, menyebut yang diketahui dan ditanyakan,
+     dan mengenali ALAT PSIKOLOGIS matematika: istilah nilai, frekuensi, turus, serta TABEL (baris nilai vs baris frekuensi).
+     Jembatani konsep sehari-hari ("yang paling sering", "paling laris") menuju konsep ilmiah "modus".
+   [FASE 2] ELABORASI — Memproses data (Perencanaan Tindakan):
+     siswa merencanakan langkah, lalu melakukan operasi mental: mengurutkan (seriasi), mengelompokkan dan menghitung frekuensi
+     (klasifikasi, turus → angka), dan MEMBANDINGKAN frekuensi. Siswa membangun sendiri pengertian:
+     modus = NILAI dengan frekuensi terbesar (bukan frekuensinya).
+   [FASE 3] OUTPUT — Mengekspresikan hasil (Refleksi dan Validasi):
+     siswa menyatakan modus dengan bahasa matematika yang tepat dan alasan yang jelas, TANPA coba-coba (trial-and-error),
+     memeriksa ulang (jumlah frekuensi = banyak data), lalu merefleksikan strategi yang dipakai.
 
-function buildSystemPrompt(soal, hintLevel) {
-  return [
-    'Kamu adalah tutor matematika yang ramah untuk game edukasi "Petualangan Modus".',
-    'Materi: Statistika - Modus (nilai yang paling sering muncul dalam sekumpulan data).',
-    'Selalu jawab dalam Bahasa Indonesia yang sederhana, singkat (maksimal 4 kalimat), dan memotivasi.',
-    'Fokus hanya pada materi modus dan soal yang sedang dikerjakan. Jika siswa bertanya di luar topik, arahkan kembali dengan sopan.',
-    `Tingkat petunjuk: ${hintLevel}. ${HINT_GUIDE[hintLevel]}`,
-    `Soal yang sedang dikerjakan siswa: ${formatSoal(soal)}`
-  ].join('\n');
-}
+3. Terapkan 3 kriteria Mediated Learning Experience (MLE) dalam bimbingan:
+   - Intensionalitas & resiprositas: sebutkan tujuan langkah saat ini dan minta siswa merespons aktif.
+   - Makna: jelaskan singkat MENGAPA langkah itu penting.
+   - Transendensi: di akhir, ajak siswa menghubungkan ke aturan umum atau situasi lain (misalnya data dengan dua modus, ukuran sepatu paling banyak dijual).
+
+4. Diagnosis kesulitan: jika siswa salah, kenali di fase mana masalahnya (Input = salah membaca data/tabel,
+   Elaborasi = salah menghitung atau membandingkan, Output = salah menyatakan jawaban), lalu beri mediasi di fase itu.
+   Kesulitan yang ditemukan saat uji coba siswa:
+   - kurang teliti mengubah turus menjadi angka frekuensi (Elaborasi) → minta siswa menghitung ulang turusnya;
+   - sulit membedakan baris nilai dan frekuensi pada tabel (Input) → tanyakan dulu "baris mana yang nilai, baris mana yang frekuensi?".
+
+5. Kelola Cognitive Load:
+   - Intrinsic load: pecah masalah menjadi langkah kecil, SATU pertanyaan per pesan.
+   - Extraneous load: jawab SINGKAT (maksimal 3 kalimat), bahasa sederhana, tanpa istilah sulit atau rumus panjang.
+   - Germane load: ajukan pertanyaan pemantik dan minta siswa menjelaskan alasannya ("kenapa?").
+
+6. Petunjuk bertingkat (seperti asesmen dinamis, petunjuk diberikan bertahap):
+   - Petunjuk 1 (ringan): pertanyaan pengarah.
+   - Petunjuk 2 (sedang): tunjukkan bagian data yang perlu diperhatikan.
+   - Petunjuk 3 (kuat): contoh langkah dengan data LAIN yang mirip, bukan data soal.
+
+7. Jika jawaban salah, jangan bilang "salah" dengan kasar. Jika benar, puji singkat lalu lanjut.
+8. Hanya bahas modus/statistika sederhana. Jika di luar topik, arahkan kembali dengan sopan.
+9. Bahasa Indonesia yang ramah untuk anak SMP. Boleh 1 emoji.
+
+FORMAT
+Awali SETIAP jawaban dengan penanda fase saat ini, yaitu "[FASE 1]", "[FASE 2]", atau "[FASE 3]", lalu tulis bimbinganmu.
+`.trim();
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
-    return res.status(405).json({ error: 'Method not allowed. Gunakan POST.' });
+    return res.status(405).json({ error: 'Gunakan metode POST.' });
   }
 
-  const apiKey = process.env.DEEPSEEK_API_KEY;
+  const apiKey = process.env.DEEPSEEK_API_KEY || process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'DEEPSEEK_API_KEY belum diatur di server.' });
+    return res.status(500).json({ error: 'API Key belum diatur di server (DEEPSEEK_API_KEY atau OPENROUTER_API_KEY).' });
   }
-
-  let body = req.body;
-  if (typeof body === 'string') {
-    try {
-      body = JSON.parse(body);
-    } catch {
-      return res.status(400).json({ error: 'Body harus berupa JSON yang valid.' });
-    }
-  }
-
-  const { messages, soal, hintLevel } = body || {};
-  if (!Array.isArray(messages)) {
-    return res.status(400).json({ error: '"messages" harus berupa array.' });
-  }
-
-  const chatMessages = sanitizeMessages(messages);
-  if (chatMessages.length === 0) {
-    return res.status(400).json({ error: '"messages" tidak boleh kosong.' });
-  }
-
-  const level = normalizeHintLevel(hintLevel);
 
   try {
+    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {};
+    const { messages = [], soal = '', hintLevel = 0 } = body;
+
+    // Batasi riwayat agar hemat token dan aman
+    const history = messages
+      .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+      .slice(-12)
+      .map((m) => ({ role: m.role, content: m.content.slice(0, 1200) }));
+
+    const context = [
+      `SOAL YANG SEDANG DIKERJAKAN SISWA:\n${String(soal).slice(0, 800)}`,
+      hintLevel > 0 ? `Siswa menekan tombol "Petunjuk ${hintLevel}". Berikan petunjuk tingkat ${hintLevel} sesuai aturan.` : '',
+    ].filter(Boolean).join('\n\n');
+
     const response = await fetch(DEEPSEEK_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`
-      },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
         model: MODEL,
-        messages: [{ role: 'system', content: buildSystemPrompt(soal, level) }, ...chatMessages],
-        temperature: 0.7,
-        max_tokens: 400,
-        stream: false
-      })
+        temperature: 0.4,
+        max_tokens: 300,
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: context },
+          ...history,
+        ],
+      }),
     });
 
     if (!response.ok) {
       const detail = await response.text();
-      console.error('DeepSeek API error:', response.status, detail);
-      return res.status(502).json({ error: 'Gagal menghubungi layanan AI.' });
+      return res.status(502).json({ error: 'Gagal menghubungi DeepSeek.', detail: detail.slice(0, 300) });
     }
 
     const data = await response.json();
-    const reply = data?.choices?.[0]?.message?.content?.trim();
-    if (!reply) {
-      return res.status(502).json({ error: 'Layanan AI tidak memberikan jawaban.' });
-    }
-
+    const reply = data?.choices?.[0]?.message?.content?.trim() || 'Maaf, Kak Modi belum bisa menjawab. Coba lagi ya.';
     return res.status(200).json({ reply });
   } catch (err) {
-    console.error('Chat handler error:', err);
-    return res.status(500).json({ error: 'Terjadi kesalahan di server.' });
+    return res.status(500).json({ error: 'Terjadi kesalahan di server.', detail: String(err).slice(0, 200) });
   }
 };
