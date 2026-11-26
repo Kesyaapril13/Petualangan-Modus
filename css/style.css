@@ -293,7 +293,7 @@ h2 { margin: 0; color: var(--ink); font: 600 26px 'Fredoka', sans-serif; }
 .section-aside { padding-bottom: 3px; color: var(--muted); font-size: 11px; }
 .section-aside span { margin-left: 6px; color: var(--coral); font-size: 15px; }
 
-.menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 13px; }
+.menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; }
 .menu-item {
   min-height: 145px;
   position: relative;
@@ -315,6 +315,10 @@ h2 { margin: 0; color: var(--ink); font: 600 26px 'Fredoka', sans-serif; }
 .menu-material { border-top: 3px solid #a9708c; }
 .menu-practice { border-top: 3px solid #e7539d; }
 .menu-quiz { border-top: 3px solid #eb74b0; }
+.menu-ai { border-top: 3px solid #b52f83; }
+.menu-ai .menu-icon { background: #fbdcec; }
+.chat-shape { width: 30px; height: 24px; display: grid; place-items: center; border-radius: 9px 9px 9px 3px; background: #df4f91; color: #fff; font: 700 13px 'Fredoka', sans-serif; }
+.chat-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border: 2px solid #fbdcec; border-radius: 50%; background: #b52f83; }
 
 .menu-icon { width: 46px; height: 46px; position: relative; display: grid; place-items: center; border-radius: 7px; }
 .menu-material .menu-icon { background: #f0e3ea; }
