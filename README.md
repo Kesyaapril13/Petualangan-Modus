@@ -53,6 +53,10 @@ File `.env` sudah dimasukkan ke `.gitignore`.
 ## Teknologi
 HTML, CSS, JavaScript, Node.js (Vercel Serverless Function), DeepSeek API, Python.
 
+## Status Integrasi API
+- API Key OpenRouter (model DeepSeek gratis) disimpan di file `.env` (lokal) dan Environment Variables Vercel.
+- File `.env` tidak diunggah ke GitHub (tercantum di `.gitignore`).
+
 ## Link
 - Repository: https://github.com/Kesyaapril13/Petualangan-Modus
 - GitHub Pages (tanpa chatbot): https://kesyaapril13.github.io/Petualangan-Modus/
