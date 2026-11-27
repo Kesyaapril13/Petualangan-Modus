@@ -74,32 +74,36 @@ FORMAT
 Awali SETIAP jawaban dengan penanda fase saat ini, yaitu "[FASE 1]", "[FASE 2]", atau "[FASE 3]", lalu tulis bimbinganmu.
 `.trim();
 
-// Model DeepSeek gratis di OpenRouter bisa berubah-ubah.
-// Karena itu daftar model gratis diambil otomatis dari https://openrouter.ai/api/v1/models
-// (endpoint publik, tanpa API Key), lalu dicoba satu per satu.
-const OPENROUTER_FALLBACK = ['deepseek/deepseek-v4-flash:free', 'deepseek/deepseek-chat-v3.1:free'];
+// Model gratis di OpenRouter sering berubah. Daftar model diambil otomatis dari
+// https://openrouter.ai/api/v1/models (publik, tanpa API Key).
+// Urutan: model DeepSeek gratis dulu; jika tidak ada, model gratis lain sebagai cadangan.
+const OPENROUTER_FALLBACK = ['deepseek/deepseek-v4-flash:free', 'deepseek/deepseek-chat-v3.1:free', 'openrouter/free'];
 let cachedFree = null;
+let infoModel = { total: 0, deepseekGratis: 0, gratisLain: 0 };
 
 async function freeDeepSeekModels() {
   if (cachedFree) return cachedFree;
   try {
     const r = await fetch('https://openrouter.ai/api/v1/models');
-    const data = await r.json();
-    const ids = (data.data || [])
-      .filter((m) => /^deepseek\//.test(m.id) && (m.id.endsWith(':free') || (m.pricing && Number(m.pricing.prompt) === 0 && Number(m.pricing.completion) === 0)))
+    const list = (await r.json()).data || [];
+    const gratis = list.filter((m) => m.id.endsWith(':free') || (m.pricing && Number(m.pricing.prompt) === 0 && Number(m.pricing.completion) === 0));
+    const santai = (id) => !/r1|reason|think|zero|vision|vl\b|image|audio/i.test(id); // utamakan model chat biasa
+    const deepseek = gratis.filter((m) => /^deepseek\//.test(m.id)).map((m) => m.id);
+    const lain = gratis.filter((m) => !/^deepseek\//.test(m.id) && santai(m.id))
       .map((m) => m.id)
-      .filter((id) => !/r1|reason|think|zero/i.test(id)) // utamakan model chat biasa (jawaban cepat)
-      .concat((data.data || []).filter((m) => /^deepseek\/.*:free$/.test(m.id)).map((m) => m.id)); // model reasoning sebagai cadangan terakhir
-    cachedFree = [...new Set(ids)];
+      .sort((a, b) => (/qwen|llama|gemma|mistral/i.test(b) ? 1 : 0) - (/qwen|llama|gemma|mistral/i.test(a) ? 1 : 0));
+    infoModel = { total: list.length, deepseekGratis: deepseek.length, gratisLain: lain.length };
+    cachedFree = [...deepseek.filter(santai), ...deepseek, ...lain.slice(0, 4)];
   } catch (e) {
+    infoModel = { total: 0, error: String(e).slice(0, 100) };
     cachedFree = [];
   }
-  return cachedFree;
+  return [...new Set(cachedFree)];
 }
 
 async function callModel(apiKey, messages) {
   const models = PROVIDER.key === 'OPENROUTER_API_KEY'
-    ? [...new Set([...(await freeDeepSeekModels()), MODEL, ...OPENROUTER_FALLBACK])].slice(0, 6)
+    ? [...new Set([...(await freeDeepSeekModels()), MODEL, ...OPENROUTER_FALLBACK])].slice(0, 8)
     : [MODEL];
   let last = null;
   const dicoba = [];
@@ -144,8 +148,8 @@ module.exports = async function handler(req, res) {
     try {
       const r = await callModel(apiKey, [{ role: 'user', content: 'Jawab satu kata: halo' }]);
       return res.status(200).json(r.ok
-        ? { status: 'BERHASIL', penyedia: PROVIDER.key, model: r.model, jawaban: r.reply }
-        : { status: 'GAGAL', penyedia: PROVIDER.key, dicoba: r.dicoba, model: r.model, kode: r.status, detail: r.detail });
+        ? { status: 'BERHASIL', penyedia: PROVIDER.key, model: r.model, jawaban: r.reply, daftarModel: infoModel }
+        : { status: 'GAGAL', penyedia: PROVIDER.key, daftarModel: infoModel, dicoba: r.dicoba, model: r.model, kode: r.status, detail: r.detail });
     } catch (err) {
       return res.status(200).json({ status: 'GAGAL', detail: String(err).slice(0, 200) });
     }
@@ -182,7 +186,7 @@ module.exports = async function handler(req, res) {
     if (!r.ok) {
       return res.status(502).json({ error: 'Gagal menghubungi DeepSeek.', kode: r.status, model: r.model, detail: r.detail });
     }
-    return res.status(200).json({ reply: r.reply });
+    return res.status(200).json({ reply: r.reply, model: r.model });
   } catch (err) {
     return res.status(500).json({ error: 'Terjadi kesalahan di server.', detail: String(err).slice(0, 200) });
   }
