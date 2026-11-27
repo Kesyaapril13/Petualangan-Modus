@@ -74,36 +74,59 @@ FORMAT
 Awali SETIAP jawaban dengan penanda fase saat ini, yaitu "[FASE 1]", "[FASE 2]", atau "[FASE 3]", lalu tulis bimbinganmu.
 `.trim();
 
-// Model cadangan untuk OpenRouter, dicoba berurutan jika model pertama tidak tersedia.
-const OPENROUTER_FALLBACK = ['deepseek/deepseek-v4-flash:free', 'deepseek/deepseek-chat-v3.1:free', 'deepseek/deepseek-chat-v3-0324:free'];
+// Model DeepSeek gratis di OpenRouter bisa berubah-ubah.
+// Karena itu daftar model gratis diambil otomatis dari https://openrouter.ai/api/v1/models
+// (endpoint publik, tanpa API Key), lalu dicoba satu per satu.
+const OPENROUTER_FALLBACK = ['deepseek/deepseek-v4-flash:free', 'deepseek/deepseek-chat-v3.1:free'];
+let cachedFree = null;
+
+async function freeDeepSeekModels() {
+  if (cachedFree) return cachedFree;
+  try {
+    const r = await fetch('https://openrouter.ai/api/v1/models');
+    const data = await r.json();
+    const ids = (data.data || [])
+      .filter((m) => /^deepseek\//.test(m.id) && (m.id.endsWith(':free') || (m.pricing && Number(m.pricing.prompt) === 0 && Number(m.pricing.completion) === 0)))
+      .map((m) => m.id)
+      .filter((id) => !/r1|reason|think|zero/i.test(id)) // utamakan model chat biasa (jawaban cepat)
+      .concat((data.data || []).filter((m) => /^deepseek\/.*:free$/.test(m.id)).map((m) => m.id)); // model reasoning sebagai cadangan terakhir
+    cachedFree = [...new Set(ids)];
+  } catch (e) {
+    cachedFree = [];
+  }
+  return cachedFree;
+}
 
 async function callModel(apiKey, messages) {
   const models = PROVIDER.key === 'OPENROUTER_API_KEY'
-    ? [...new Set([MODEL, ...OPENROUTER_FALLBACK])]
+    ? [...new Set([...(await freeDeepSeekModels()), MODEL, ...OPENROUTER_FALLBACK])].slice(0, 6)
     : [MODEL];
   let last = null;
+  const dicoba = [];
   for (const model of models) {
     const response = await fetch(DEEPSEEK_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey.trim()}`,
         'HTTP-Referer': 'https://petualangan-modus.vercel.app',
         'X-Title': 'Petualangan Modus',
       },
-      body: JSON.stringify({ model, temperature: 0.4, max_tokens: 400, messages }),
+      body: JSON.stringify({ model, temperature: 0.4, max_tokens: 600, messages }),
     });
     if (response.ok) {
       const data = await response.json();
       const reply = data?.choices?.[0]?.message?.content?.trim();
       if (reply) return { ok: true, reply, model };
       last = { status: 200, model, detail: 'Jawaban kosong dari model.' };
+      dicoba.push(`${model}: kosong`);
       continue;
     }
-    last = { status: response.status, model, detail: (await response.text()).slice(0, 400) };
+    last = { status: response.status, model, detail: (await response.text()).slice(0, 300) };
+    dicoba.push(`${model}: ${response.status}`);
     if (response.status === 401 || response.status === 402) break; // key salah / saldo habis: model lain tidak akan membantu
   }
-  return { ok: false, ...last };
+  return { ok: false, ...last, dicoba };
 }
 
 module.exports = async function handler(req, res) {
@@ -122,7 +145,7 @@ module.exports = async function handler(req, res) {
       const r = await callModel(apiKey, [{ role: 'user', content: 'Jawab satu kata: halo' }]);
       return res.status(200).json(r.ok
         ? { status: 'BERHASIL', penyedia: PROVIDER.key, model: r.model, jawaban: r.reply }
-        : { status: 'GAGAL', penyedia: PROVIDER.key, model: r.model, kode: r.status, detail: r.detail });
+        : { status: 'GAGAL', penyedia: PROVIDER.key, dicoba: r.dicoba, model: r.model, kode: r.status, detail: r.detail });
     } catch (err) {
       return res.status(200).json({ status: 'GAGAL', detail: String(err).slice(0, 200) });
     }
