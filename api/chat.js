@@ -8,14 +8,18 @@
    atau di file .env saat dijalankan lokal dengan `vercel dev`).
 */
 
-// Dua pilihan penyedia model DeepSeek (keduanya lewat variabel lingkungan, bukan di kode):
-// 1) DeepSeek resmi (berbayar)       -> DEEPSEEK_API_KEY
-// 2) DeepSeek gratis lewat OpenRouter -> OPENROUTER_API_KEY (model deepseek/deepseek-v4-flash:free)
-const USE_OPENROUTER = !process.env.DEEPSEEK_API_KEY && !!process.env.OPENROUTER_API_KEY;
-const DEEPSEEK_URL = USE_OPENROUTER ? 'https://openrouter.ai/api/v1/chat/completions' : 'https://api.deepseek.com/chat/completions';
-const MODEL = USE_OPENROUTER
-  ? process.env.OPENROUTER_MODEL || 'deepseek/deepseek-v4-flash:free'
-  : process.env.DEEPSEEK_MODEL || 'deepseek-chat';
+// Pilihan penyedia model DeepSeek (semua lewat variabel lingkungan, bukan di kode):
+// 1) DeepSeek resmi (berbayar)              -> DEEPSEEK_API_KEY
+// 2) DeepSeek gratis lewat OpenRouter       -> OPENROUTER_API_KEY
+// 3) DeepSeek lewat Vercel AI Gateway       -> AI_GATEWAY_API_KEY (kredit gratis bulanan Vercel)
+const PROVIDERS = [
+  { key: 'DEEPSEEK_API_KEY', url: 'https://api.deepseek.com/chat/completions', model: process.env.DEEPSEEK_MODEL || 'deepseek-chat' },
+  { key: 'OPENROUTER_API_KEY', url: 'https://openrouter.ai/api/v1/chat/completions', model: process.env.OPENROUTER_MODEL || 'deepseek/deepseek-v4-flash:free' },
+  { key: 'AI_GATEWAY_API_KEY', url: 'https://ai-gateway.vercel.sh/v1/chat/completions', model: process.env.AI_GATEWAY_MODEL || 'deepseek/deepseek-v3.2' },
+];
+const PROVIDER = PROVIDERS.find((p) => process.env[p.key]) || PROVIDERS[0];
+const DEEPSEEK_URL = PROVIDER.url;
+const MODEL = PROVIDER.model;
 
 // Model pembelajaran: Rigorous Mathematical Thinking (RMT) — Kinard & Kozulin,
 // disusun sesuai ringkasan dosen (docs/Ringkasan_RMT_dari_Dosen.md) dan RMT.md.
@@ -70,15 +74,67 @@ FORMAT
 Awali SETIAP jawaban dengan penanda fase saat ini, yaitu "[FASE 1]", "[FASE 2]", atau "[FASE 3]", lalu tulis bimbinganmu.
 `.trim();
 
+// Model cadangan untuk OpenRouter, dicoba berurutan jika model pertama tidak tersedia.
+const OPENROUTER_FALLBACK = ['deepseek/deepseek-v4-flash:free', 'deepseek/deepseek-chat-v3.1:free', 'deepseek/deepseek-chat-v3-0324:free'];
+
+async function callModel(apiKey, messages) {
+  const models = PROVIDER.key === 'OPENROUTER_API_KEY'
+    ? [...new Set([MODEL, ...OPENROUTER_FALLBACK])]
+    : [MODEL];
+  let last = null;
+  for (const model of models) {
+    const response = await fetch(DEEPSEEK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+        'HTTP-Referer': 'https://petualangan-modus.vercel.app',
+        'X-Title': 'Petualangan Modus',
+      },
+      body: JSON.stringify({ model, temperature: 0.4, max_tokens: 400, messages }),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      const reply = data?.choices?.[0]?.message?.content?.trim();
+      if (reply) return { ok: true, reply, model };
+      last = { status: 200, model, detail: 'Jawaban kosong dari model.' };
+      continue;
+    }
+    last = { status: response.status, model, detail: (await response.text()).slice(0, 400) };
+    if (response.status === 401 || response.status === 402) break; // key salah / saldo habis: model lain tidak akan membantu
+  }
+  return { ok: false, ...last };
+}
+
 module.exports = async function handler(req, res) {
+  const apiKey = process.env[PROVIDER.key];
+
+  // Cek koneksi lewat browser: buka /api/chat?tes=1
+  if (req.method === 'GET') {
+    if (!req.query || !req.query.tes) {
+      res.setHeader('Allow', 'POST');
+      return res.status(405).json({ error: 'Gunakan metode POST. Untuk cek koneksi buka /api/chat?tes=1' });
+    }
+    if (!apiKey) {
+      return res.status(200).json({ status: 'GAGAL', alasan: 'API Key tidak ditemukan di Vercel. Pastikan nama variabel OPENROUTER_API_KEY lalu Redeploy.' });
+    }
+    try {
+      const r = await callModel(apiKey, [{ role: 'user', content: 'Jawab satu kata: halo' }]);
+      return res.status(200).json(r.ok
+        ? { status: 'BERHASIL', penyedia: PROVIDER.key, model: r.model, jawaban: r.reply }
+        : { status: 'GAGAL', penyedia: PROVIDER.key, model: r.model, kode: r.status, detail: r.detail });
+    } catch (err) {
+      return res.status(200).json({ status: 'GAGAL', detail: String(err).slice(0, 200) });
+    }
+  }
+
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Gunakan metode POST.' });
   }
 
-  const apiKey = process.env.DEEPSEEK_API_KEY || process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'API Key belum diatur di server (DEEPSEEK_API_KEY atau OPENROUTER_API_KEY).' });
+    return res.status(500).json({ error: 'API Key belum diatur di server (DEEPSEEK_API_KEY, OPENROUTER_API_KEY, atau AI_GATEWAY_API_KEY).' });
   }
 
   try {
@@ -96,29 +152,14 @@ module.exports = async function handler(req, res) {
       hintLevel > 0 ? `Siswa menekan tombol "Petunjuk ${hintLevel}". Berikan petunjuk tingkat ${hintLevel} sesuai aturan.` : '',
     ].filter(Boolean).join('\n\n');
 
-    const response = await fetch(DEEPSEEK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model: MODEL,
-        temperature: 0.4,
-        max_tokens: 300,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'system', content: context },
-          ...history,
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      const detail = await response.text();
-      return res.status(502).json({ error: 'Gagal menghubungi DeepSeek.', detail: detail.slice(0, 300) });
+    const r = await callModel(apiKey, [
+      { role: 'system', content: SYSTEM_PROMPT + '\n\n' + context },
+      ...history,
+    ]);
+    if (!r.ok) {
+      return res.status(502).json({ error: 'Gagal menghubungi DeepSeek.', kode: r.status, model: r.model, detail: r.detail });
     }
-
-    const data = await response.json();
-    const reply = data?.choices?.[0]?.message?.content?.trim() || 'Maaf, Kak Modi belum bisa menjawab. Coba lagi ya.';
-    return res.status(200).json({ reply });
+    return res.status(200).json({ reply: r.reply });
   } catch (err) {
     return res.status(500).json({ error: 'Terjadi kesalahan di server.', detail: String(err).slice(0, 200) });
   }
