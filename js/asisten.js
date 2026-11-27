@@ -49,10 +49,13 @@
     });
   }
 
-  function setMode(isOffline) {
+  function setMode(isOffline, model) {
     offline = isOffline;
     if (!modeBadge) return;
-    modeBadge.textContent = isOffline ? 'Mode cadangan (tanpa DeepSeek)' : 'Terhubung ke DeepSeek AI';
+    const nama = model ? model.split('/').pop().replace(':free', '') : '';
+    modeBadge.textContent = isOffline
+      ? 'Mode cadangan (tanpa AI)'
+      : (model && !/deepseek/i.test(model) ? `Terhubung ke AI (${nama})` : 'Terhubung ke DeepSeek AI');
     modeBadge.classList.toggle('offline', isOffline);
   }
 
@@ -247,7 +250,7 @@
         const data = await res.json().catch(() => ({}));
         typing.remove();
         if (res.ok && data.reply) {
-          setMode(false);
+          setMode(false, data.model);
           addBubble('assistant', data.reply);
           messages.push({ role: 'assistant', content: data.reply });
         } else {
