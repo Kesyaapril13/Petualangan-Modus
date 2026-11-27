@@ -238,31 +238,31 @@
     addBubble('user', text);
     messages.push({ role: 'user', content: text });
 
-    if (!offline) {
-      const typing = addBubble('assistant', '…');
-      typing.classList.add('typing');
-      try {
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages, soal: soalText(soalList[current]), hintLevel: quick === 'hint' ? hintLevel : 0 }),
-        });
-        const data = await res.json().catch(() => ({}));
-        typing.remove();
-        if (res.ok && data.reply) {
-          setMode(false, data.model);
-          addBubble('assistant', data.reply);
-          messages.push({ role: 'assistant', content: data.reply });
-        } else {
-          setMode(true);
-          offlineReply(text, quick);
-        }
-      } catch (e) {
-        typing.remove();
+    // Selalu coba AI dulu; jika gagal, pesan ini dijawab mode cadangan.
+    const typing = addBubble('assistant', '…');
+    typing.classList.add('typing');
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages, soal: soalText(soalList[current]), hintLevel: quick === 'hint' ? hintLevel : 0 }),
+      });
+      const data = await res.json().catch(() => ({}));
+      typing.remove();
+      if (res.ok && data.reply) {
+        setMode(false, data.model);
+        if (modeBadge) modeBadge.title = data.model || '';
+        addBubble('assistant', data.reply);
+        messages.push({ role: 'assistant', content: data.reply });
+      } else {
         setMode(true);
+        if (modeBadge) modeBadge.title = (data.error || 'Gagal') + (data.kode ? ` (kode ${data.kode})` : '') + (data.detail ? ': ' + String(data.detail).slice(0, 150) : '');
         offlineReply(text, quick);
       }
-    } else {
+    } catch (e) {
+      typing.remove();
+      setMode(true);
+      if (modeBadge) modeBadge.title = 'Tidak bisa menghubungi /api/chat';
       offlineReply(text, quick);
     }
 
